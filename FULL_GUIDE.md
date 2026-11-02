@@ -16,7 +16,7 @@
 6. [คำสั่ง command line ทุกตัว และสิ่งที่จะเห็น](#6-คำสั่ง-command-line-ทุกตัว-และสิ่งที่จะเห็น)
 7. [ข้อความ error ทั้งหมด และวิธีแก้](#7-ข้อความ-error-ทั้งหมด-และวิธีแก้)
 8. [โปรแกรมหน้าต่าง (GUI) ทุกปุ่ม](#8-โปรแกรมหน้าต่าง-gui-ทุกปุ่ม)
-9. [หน้าจอเต็มแบบ DOSBox (TUI)](#9-หน้าจอเต็มแบบ-dosbox-tui)
+9. [หน้าจอเต็มแบบ DOSBox (TUI) — ถอดออกแล้ว](#9-หน้าจอเต็มแบบ-dosbox-tui--ถอดออกแล้ว)
 10. [เปิดแบบดับเบิลคลิก / ไอคอน / .exe](#10-เปิดแบบดับเบิลคลิก--ไอคอน--exe)
 11. [อธิบาย factorial.asm ทีละบรรทัด](#11-อธิบาย-factorialasm-ทีละบรรทัด)
 12. [อธิบาย nck.asm](#12-อธิบาย-nckasm)
@@ -79,13 +79,13 @@ nck.asm  "เปลี่ยนวิธี" ไปใช้สามเหล�
 |---|---|---|
 | simulator ที่รันจาก command line | `sim/main.py` + `cpu.py` `isa.py` `memory.py` | ✅ |
 | factorial ด้วย mul ที่เขียนเอง | `programs/factorial.asm` | ✅ ถูกถึง 12! |
+| factorial เกิน 12! (array ของหลัก) | `programs/bigfactorial.asm` | ✅ ถึง 92! (เทสต์ 0–40) |
 | nCk แบบสามเหลี่ยมปาสคาล | `programs/nck.asm` | ✅ ถึง n = 26 (ใช้ได้ถึง 33) |
 | ตรวจ overflow | ใน `cpu.py` | ✅ |
 | trace / step | `-t` `-s` | ✅ |
-| หน้าจอเต็มแบบ DOSBox | `sim/tui.py` (`--tui`) | ✅ |
 | โปรแกรมหน้าต่าง (GUI) ธีมสีเข้ม | `sim/gui.py` (`--gui`) | ✅ |
 | ไอคอน / .exe | `MIPS Simulator.pyw`, `create_shortcut.bat`, `build_exe.bat` | ✅ |
-| เทสต์อัตโนมัติ | `tests/test_all.py` | ✅ 11 เทสต์ผ่าน |
+| เทสต์อัตโนมัติ | `tests/test_all.py` | ✅ 13 เทสต์ผ่าน |
 
 ### 1.4 ข้อห้ามของกลุ่ม
 - มีโปรเจคของเพื่อนอีกกลุ่มที่เคยเอามาดู **ห้ามลอกโค้ดเด็ดขาด** ใช้ได้แค่เป็นแนวคิด
@@ -191,7 +191,6 @@ Python 3.12.4
 ### 3.3 ของที่ต้องติดตั้งเฉพาะบางโหมด
 | ใช้อะไร | ต้องพิมพ์ครั้งเดียว |
 |---|---|
-| หน้าจอเต็ม `--tui` บน Windows | `pip install windows-curses` |
 | เทสต์ด้วย pytest (ไม่บังคับ) | `pip install pytest` |
 | สร้าง .exe | ไม่ต้องพิมพ์เอง `build_exe.bat` ติดตั้ง PyInstaller ให้ (ต้องมีเน็ตครั้งแรก) |
 
@@ -213,7 +212,6 @@ factorial_project/
 │  ├─ cpu.py                 CPU: register 32 ตัว, PC, fetch-decode-execute, SYSCALL, overflow, trace, step
 │  ├─ isa.py                 assembler: แยกคำสั่ง, label 2-pass, ชื่อ register, แปลงเป็น machine code
 │  ├─ memory.py              memory แบบ byte + อ่าน/เขียนทีละ word (4 byte)
-│  ├─ tui.py                 หน้าจอเต็มแบบ Z80Sim ใน DOSBox (--tui)
 │  ├─ gui.py                 โปรแกรมหน้าต่าง (--gui)
 │  ├─ instructions.txt       โปรแกรมเริ่มต้นของอาจารย์ (บวก 10+9+…+1) รันเมื่อไม่ระบุไฟล์
 │  ├─ icon.ico, icon.png     ไอคอนของโปรแกรม
@@ -221,6 +219,7 @@ factorial_project/
 │
 ├─ programs/                 ★ โปรแกรม assembly ที่เราเขียน
 │  ├─ factorial.asm          n! ด้วย mul ที่เขียนเอง
+│  ├─ bigfactorial.asm       n! เกิน 12! ด้วย array ของหลักทศนิยม
 │  └─ nck.asm                nCk ด้วยสามเหลี่ยมปาสคาล
 │
 ├─ examples/                 โปรแกรมตัวอย่าง (ใช้เช็คว่าแก้ simulator แล้วของเดิมยังรันได้)
@@ -229,7 +228,7 @@ factorial_project/
 │  └─ fibonacci.asm                    (ถ้ามี) ตัวอย่างที่เขียนเพิ่มเอง
 │
 ├─ tests/
-│  └─ test_all.py            เทสต์อัตโนมัติ 11 ชุด
+│  └─ test_all.py            เทสต์อัตโนมัติ 13 ชุด
 │
 └─ backup_before_.../        ไฟล์สำรองก่อนแก้แต่ละครั้ง (ดูส่วนที่ 20)
 ```
@@ -436,19 +435,13 @@ python main.py --gui                          ← หน้าต่างเป
 - Command Prompt จะรอจนกว่าจะปิดหน้าต่าง
 - ถ้าชื่อไฟล์ผิด: `*** ERROR: file not found: ...` และไม่เปิดหน้าต่าง
 
-### 6.9 `--tui` — หน้าจอเต็มแบบ DOSBox
-```
-python main.py ../programs/factorial.asm --tui
-```
-ดูส่วนที่ 9
-
-### 6.10 `--max-steps N` — กัน loop ไม่รู้จบ
+### 6.9 `--max-steps N` — กัน loop ไม่รู้จบ
 ค่าเริ่มต้น 1,000,000 คำสั่ง ถ้าเกินจะหยุดพร้อม error
 ```
 python main.py myprog.asm --max-steps 5000
 ```
 
-### 6.11 ตารางสรุป
+### 6.10 ตารางสรุป
 | คำสั่ง | ใช้เมื่อ |
 |---|---|
 | `python main.py` | เช็คว่า simulator ยังทำงาน (ต้องได้ $3 = 0x37) |
@@ -460,7 +453,6 @@ python main.py myprog.asm --max-steps 5000
 | `python main.py FILE --mem 0x4000` | ดู array ใน memory |
 | `python main.py FILE --int` | register ฐานสิบ |
 | `python main.py FILE --gui` | เปิดหน้าต่าง |
-| `python main.py FILE --tui` | หน้าจอเต็มแบบ DOSBox |
 
 ---
 
@@ -482,7 +474,6 @@ python main.py myprog.asm --max-steps 5000
 | `no input (SYSCALL 5 needs a number)` | โปรแกรมรอ input แต่ไม่มีให้ (เช่น ป้อนจากไฟล์ว่าง) | ป้อน input ให้ครบ |
 | `more than 1,000,000 instructions executed (possible infinite loop)` | loop ไม่รู้จบ | เช็คเงื่อนไข branch หรือเพิ่ม `--max-steps` |
 | `unknown SYSCALL service N` | `$v0` ไม่ใช่ 1/5/10/11 ตอนเรียก SYSCALL | ตั้ง `$v0` ให้ถูกก่อน SYSCALL |
-| `The --tui mode needs the curses module...` | ยังไม่ได้ลง windows-curses | `pip install windows-curses` |
 
 **คำเตือน (ไม่ใช่ error โปรแกรมรันต่อ):**
 ```
@@ -607,25 +598,9 @@ SYSCALL 5 at line 44. Type an integer (several can be separated by spaces).
 
 ---
 
-## 9. หน้าจอเต็มแบบ DOSBox (TUI)
+## 9. หน้าจอเต็มแบบ DOSBox (TUI) — ถอดออกแล้ว
 
-```
-pip install windows-curses          ← ครั้งแรกครั้งเดียว (Windows)
-python main.py ../programs/factorial.asm --tui
-```
-- หน้าต่าง Command Prompt ต้องกว้างอย่างน้อย **90 × 24** ตัวอักษร (ขยายหน้าต่างก่อนรัน)
-- แบ่งจอเป็น: Registers / Program (ลูกศร ► ชี้คำสั่งถัดไป) / Memory / Output / Message
-
-| ปุ่ม | ทำอะไร |
-|---|---|
-| `T` / Enter / Space | รัน 1 คำสั่ง |
-| `G` | รันจนจบ |
-| `M` | เลือก address ของ memory (ว่าง = ตาม `$sp`) |
-| ↑ ↓ | เลื่อน memory |
-| `R` | เริ่มใหม่ |
-| `Q` | ออก |
-
-ทำไว้ให้หน้าตาคล้าย Z80Sim ใน DOSBox ที่ใช้ในวิชา Microprocessor Lab
+เคยมีโหมด `--tui` (หน้าจอข้อความเต็มจอแบบ Z80Sim ใน DOSBox) แต่ถอดออกแล้ว เพราะ GUI ทำได้ครบทุกอย่าง และ TUI ต้องติดตั้ง `windows-curses` เพิ่ม ถ้าต้องการคืน ไฟล์เดิมอยู่ใน `backup_before_remove_tui` (ดู `HOW_TO_RESTORE.txt`)
 
 ---
 
@@ -753,6 +728,32 @@ mul_done:
 ดูตาราง machine code: `BNE $t0 $zero 6` (address 0x54) → กระโดดไป `fact_done` ที่ 0x70
 offset = (0x70 − 0x58) ÷ 4 = **6** (นับจากคำสั่งถัดไป หน่วยเป็นคำสั่ง)
 `JAL 0x30` → machine code `0c00000c` (opcode JAL = 000011, target = 0x30 ÷ 4 = 0xC)
+
+### 11.7 ไปต่อเกิน 12!: bigfactorial.asm
+ไฟล์ `programs/bigfactorial.asm` แก้ปัญหา 13! ล้น โดย**ไม่เก็บ n! ใน register ตัวเดียว** แต่เก็บเป็น **array ของหลักทศนิยม** ใน memory ที่ `0x4000` (ที่เดียวกับ array ของ nck) ตัวเลขจึงยาวได้ตาม memory ไม่ติดขีดจำกัด 32 bit
+
+**วิธีคิด = คูณบนกระดาษ** หลักหน่วยก่อน แล้วทดไปหลักถัดไป
+```
+120 × 6:  0×6 + 0 = 0  → หลัก 0 ทด 0
+          2×6 + 0 = 12 → หลัก 2 ทด 1
+          1×6 + 1 = 7  → หลัก 7 ทด 0      → 720
+```
+- `digit[j]` อยู่ที่ `0x4000 + 4 × j` โดย `digit[0]` = หลักหน่วย (เก็บกลับด้าน เพื่อให้เพิ่มหลักใหม่ต่อท้าย array ได้ตอนเหลือตัวทด)
+- `x = digit[j] × i + ทด` → ใช้ **`mul` ตัวเดิม** (บวกซ้ำ ไม่เกิน 9 รอบ เพราะ digit ≤ 9)
+- `digit[j] = x mod 10`, `ทด = x ÷ 10` → ฟังก์ชันใหม่ **`divmod10`** หารด้วยการ**ลบ 10 ซ้ำ** ๆ (ไม่มีคำสั่งหาร)
+- ถ้าจบแถวแล้วยังเหลือทด → เพิ่มหลักใหม่ (`grow`)
+- พิมพ์จากหลักบนสุดลงมาทีละหลักด้วย SYSCALL 1
+
+| n | ผล | จำนวนคำสั่ง |
+|---|---|---|
+| 13 | 6227020800 (ถูก ไม่มี overflow) | 2,900 |
+| 25 | 15511210043330985984000000 | 18,355 |
+| 50 | 3041409320…(65 หลัก) | 144,155 |
+| 92 | (143 หลัก) | 968,851 — ใกล้ขีดจำกัด 1 ล้าน |
+| 100 | (158 หลัก) | ~1.27 ล้าน → ต้องใส่ `--max-steps 5000000` |
+
+ดูหลักใน memory: `python main.py ../programs/bigfactorial.asm --mem 0x4000` ใส่ 13 → `00 00 00 00 | 00 00 00 00 | 00 00 00 08 | ...` = หลัก 0,0,8,0,2,0,7,2,2,6 → อ่านกลับหลังได้ 6227020800
+ใน GUI: เอาติ๊ก Follow `$sp` ออก, ช่อง address ใส่ `0x4000`, กด DEC (GUI รันช้ากว่า command line ใช้ n ≤ ~30)
 
 ---
 
@@ -894,7 +895,6 @@ loop:
 main.py
  ├─ parse_args()              อ่านตัวเลือก (-t, -q, --gui, ...)
  ├─ ถ้า --gui → gui.main(FILE) แล้วจบ
- ├─ ถ้า --tui → tui.run_tui(...) แล้วจบ
  ├─ load_instructions(FILE)   อ่านไฟล์เป็นรายการบรรทัด
  ├─ Memory()                  memory ว่าง
  ├─ CPU(lines, memory)        ← assemble ตรงนี้
@@ -919,7 +919,7 @@ main.py
 - `execute()` ทำงานตาม opcode (if/elif ยาว)
 - `u32() s32() sext16()` ช่วยให้ทุกค่าอยู่ใน 32 bit ถูกต้อง
 - `check_overflow()` เทียบผลจริง (Python ไม่มีขีดจำกัด) กับช่วง 32 bit
-- `step_once()` รัน 1 คำสั่ง (ใช้โดย GUI และ TUI), `current_index()`, `address_of()`
+- `step_once()` รัน 1 คำสั่ง (ใช้โดย GUI), `current_index()`, `address_of()`
 - `print_trace()` (`-t`), `step_prompt()` (`-s`)
 - SYSCALL 5 อ่านด้วย `input_func` (GUI ส่งฟังก์ชันหน้าต่างเด้งมาแทน, เทสต์ส่งฟังก์ชันปลอม)
 
@@ -929,7 +929,6 @@ main.py
 
 **`gui.py`** ใช้ CPU ตัวเดียวกัน แต่เรียก `step_once()` ผ่าน timer `after()` ของ Tkinter เพื่อให้หน้าต่างไม่ค้าง
 
-**`tui.py`** ใช้ `curses` วาดหน้าจอข้อความ
 
 ### 14.3 สิ่งที่แก้จาก V7.1 ของอาจารย์ (บั๊กที่เจอ)
 1. machine code R-type (เช่น ADD) ได้ `00000000` → แก้แล้ว ตรงเฉลย A01
@@ -940,7 +939,7 @@ main.py
 6. ไฟล์ไม่มี `.ORG` → error (`textpos` ไม่ได้ตั้งค่า)
 7. คำสั่งที่ไม่รองรับถูกข้ามเงียบ ๆ → ตอนนี้แจ้ง error
 
-ที่เพิ่ม: label, ชื่อ register, คำสั่งใหม่ (SUB SUBU ADDU AND OR NOR SLT SLTU ANDI SLL SRL JAL JR SYSCALL), stack, overflow, โหมด -t -s -q --mem --int --tui --gui, เลขบรรทัดใน trace, เทสต์
+ที่เพิ่ม: label, ชื่อ register, คำสั่งใหม่ (SUB SUBU ADDU AND OR NOR SLT SLTU ANDI SLL SRL JAL JR SYSCALL), stack, overflow, โหมด -t -s -q --mem --int --gui, เลขบรรทัดใน trace, เทสต์
 
 ---
 
@@ -953,13 +952,15 @@ python -m unittest discover -s tests -v
 ```
 ผลที่ได้ ท้ายสุด:
 ```
-Ran 11 tests in ...s
+Ran 13 tests in ...s
 OK
 ```
 | เทสต์ | ตรวจอะไร |
 |---|---|
 | `test_all_values_0_to_12` | factorial 0..12 ถูกทุกค่า ไม่มี overflow |
 | `test_13_overflows` | 13! ต้องมีคำเตือน overflow |
+| `test_all_values_0_to_40` | bigfactorial 0..40 ถูกทุกค่า ไม่มี overflow |
+| `test_digits_in_memory` | หลักของ 13! ถูกเก็บใน memory ที่ 0x4000 เรียงหลักหน่วยก่อน |
 | `test_all_pairs_up_to_26` | nCk ทุกคู่ n ≤ 26 (378 คู่) ตรงกับ `math.comb` |
 | `test_k_out_of_range_gives_zero` | k < 0 หรือ k > n ได้ 0 |
 | `test_sum_10_to_1` | โปรแกรมของอาจารย์ได้ 55 |
@@ -1031,7 +1032,8 @@ git push -u origin main
 
 ## 17. ข้อจำกัดที่รู้อยู่แล้ว
 
-- factorial ถูกถึง **12!** (13! เกิน 32 bit — ข้อจำกัดของ register ไม่ใช่บั๊ก)
+- factorial.asm ถูกถึง **12!** (13! เกิน 32 bit — ข้อจำกัดของ register ไม่ใช่บั๊ก) → เกินนั้นใช้ bigfactorial.asm
+- bigfactorial.asm ถึง **92!** ภายในขีดจำกัด 1,000,000 คำสั่ง (100! ต้องใส่ `--max-steps 5000000`) ใน GUI ช้ากว่า ใช้ n ไม่เกินประมาณ 30
 - nck ใช้ได้ถึง **n = 33** (เทสต์ครบถึง 26)
 - `mul` รับ b ติดลบไม่ได้ และช้าเมื่อ b ใหญ่ (บวกซ้ำ b ครั้ง)
 - ยังไม่รองรับ `LBU LHU SB SH LL SC`, SYSCALL 4 (string), `.data` / `.asciiz`
@@ -1088,9 +1090,6 @@ A: GUI assemble ใหม่ให้อัตโนมัติเมื่อ�
 **Q: breakpoint ไม่หยุด**
 A: breakpoint ทำงานตอน **Run** เท่านั้น (Step หยุดทุกคำสั่งอยู่แล้ว) และจะไม่หยุดที่บรรทัดที่กำลังเริ่มรัน
 
-**Q: `--tui` ขึ้น error เรื่อง curses / หน้าจอเพี้ยน**
-A: `pip install windows-curses` และขยายหน้าต่างให้ใหญ่กว่า 90×24
-
 **Q: แก้โค้ดแล้ว .exe ยังเหมือนเดิม**
 A: ต้องรัน `build_exe.bat` ใหม่
 
@@ -1114,6 +1113,7 @@ A: ดูตัวเลข `line NN` ด้านหน้า แล้วเ�
 | `backup_before_command_line` | แท็บ Command line ใน GUI (ทดลองแล้วถอดออก) |
 | `backup_before_gui_flag` | เพิ่ม `--gui` และเลขบรรทัดใน trace |
 | `backup_before_dark_theme` | ปุ่ม HEX/DEC คุมทุกส่วน, `input #N`, ธีมสีเข้ม, ไฟล์นี้ |
+| `backup_before_remove_tui` | ถอดหน้าจอ TUI (`--tui`, `tui.py`) ออก |
 
 วิธีคืน: copy ไฟล์ในโฟลเดอร์ backup ไปทับไฟล์ที่ตำแหน่งเดียวกันในโปรเจค
 ถ้างานเสถียรแล้วและอัป GitHub แล้ว ลบโฟลเดอร์ backup ทิ้งได้ (git เก็บประวัติให้แทน)

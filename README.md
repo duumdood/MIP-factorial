@@ -5,7 +5,9 @@
 
 ## เรื่องที่โปรเจคนี้เล่า
 ```
-factorial.asm (มีฟังก์ชัน mul ที่เขียนเอง)  →  13! OVERFLOW (เกิน 32 bit)  →  nck.asm แบบสามเหลี่ยมปาสคาล (บวกอย่างเดียว) ถึง n = 26
+factorial.asm (มีฟังก์ชัน mul ที่เขียนเอง)  →  13! OVERFLOW (เกิน 32 bit)
+   ├→ bigfactorial.asm เก็บ n! เป็น array ของหลักทศนิยมใน memory → ได้ 13!, 50!, 92! …
+   └→ nck.asm เปลี่ยนวิธีเป็นสามเหลี่ยมปาสคาล (บวกอย่างเดียว) ถึง n = 26
 ```
 
 ## โครงสร้าง
@@ -15,7 +17,6 @@ sim/                    simulator (ต่อยอดจาก V7.1) — จุ�
   cpu.py                CPU: register, fetch-execute, คำสั่งทั้งหมด, ตรวจ overflow, trace/step
   isa.py                แปลภาษา assembly: label (2-pass), ชื่อ register, machine code
   memory.py             memory แบบ byte + อ่าน/เขียน word (4 byte)
-  tui.py                ★ หน้าจอเต็มแบบ Z80Sim ใน DOSBox (--tui)
   gui.py                ★ โปรแกรมหน้าต่าง (GUI) แบบ QtSpim — เขียนโค้ด/รัน/ดู register ในที่เดียว
   icon.ico, icon.png    ไอคอนของโปรแกรม
 MIPS Simulator.pyw      ★ ดับเบิลคลิกเพื่อเปิด GUI
@@ -24,7 +25,8 @@ build_exe.bat           ★ สร้าง MIPS Simulator.exe
   instructions.txt      โปรแกรมเริ่มต้นของอาจารย์ (บวก 10..1)
 programs/
   factorial.asm         ★ โจทย์หลัก: n! ด้วยฟังก์ชัน mul (บวกซ้ำ) + JAL/JR + stack
-  nck.asm               ★ ต่อยอด: nCk ด้วยสามเหลี่ยมปาสคาลใน memory
+  bigfactorial.asm      ★ n! เกิน 12! ได้: เก็บเป็น array ของหลักทศนิยม (คูณทีละหลัก + ทด)
+  nck.asm               ★ nCk ด้วยสามเหลี่ยมปาสคาลใน memory (เปลี่ยนวิธีเพราะ factorial ล้น)
 examples/               โปรแกรมตัวอย่างของอาจารย์ (ใช้ตรวจว่า simulator ยังเข้ากันได้)
 tests/test_all.py       เทสต์อัตโนมัติ
 ```
@@ -34,13 +36,13 @@ tests/test_all.py       เทสต์อัตโนมัติ
 ```
 cd sim
 python main.py ../programs/factorial.asm          แล้วพิมพ์ 5  → 120
+python main.py ../programs/bigfactorial.asm       แล้วพิมพ์ 25 → 15511210043330985984000000
 python main.py ../programs/nck.asm                แล้วพิมพ์ 26 13 → 10400600
 python main.py                                    รัน instructions.txt ของอาจารย์
 ```
 
 | ตัวเลือก | ความหมาย |
 |---|---|
-| `--tui` | **หน้าจอเต็มแบบ Z80Sim/DOSBox** (T = ทีละคำสั่ง, G = รันจนจบ, M = เลือก address ของ memory, ↑↓ = เลื่อน memory, R = เริ่มใหม่, Q = ออก) — บน Windows ต้องรัน `pip install windows-curses` ครั้งแรกก่อน และหน้าต่างต้องกว้างอย่างน้อย 90×24 |
 | `-t` | trace: แสดงทุกคำสั่งที่รัน + register ที่เปลี่ยน พร้อม**เลขบรรทัดในไฟล์ .asm** เช่น `line  40 [0000000C] JAL 0x30 \| $ra: ...` |
 | `-s` | step: รันทีละคำสั่ง (Enter = ถัดไป, r = register, m = memory, g = รันจนจบ, q = ออก) |
 | `-v` | แสดงแบบเดิมของอาจารย์ (register + memory ทุกคำสั่ง) |
@@ -82,7 +84,7 @@ GUI ใช้ simulator ตัวเดียวกับ command line (cpu.py/i
 - `SYSCALL`: 1 = พิมพ์ตัวเลข, 5 = รับตัวเลข, 10 = จบ, 11 = พิมพ์ตัวอักษร
 - assembler 2-pass: เขียน `loop:` แทนการนับ offset, ใช้ `$t0 $sp $ra`, ใส่คอมเมนต์ `#` และคอมมาได้
 - เตือน **OVERFLOW** ของ ADD/ADDI/SUB พร้อมบอก address และค่าที่ถูกต้อง
-- โหมด trace / step / หน้าจอเต็ม `--tui` / โปรแกรมหน้าต่าง `gui.py`, เทสต์อัตโนมัติ
+- โหมด trace / step / โปรแกรมหน้าต่าง `gui.py` (`--gui`), เทสต์อัตโนมัติ
 
 **แก้บั๊ก**
 - machine code ของ R-type (เช่น ADD) เดิมได้ `00000000` → ตอนนี้ถูกต้อง (ตรวจกับเฉลยแบบฝึกหัด A01)
@@ -94,7 +96,8 @@ GUI ใช้ simulator ตัวเดียวกับ command line (cpu.py/i
 - คำสั่งที่ยังไม่รองรับ เดิมถูกข้ามเงียบ ๆ → ตอนนี้แจ้ง error
 
 ## ข้อจำกัด
-- factorial ถูกต้องถึง n = 12 (13! เกิน 32 bit — เป็นข้อจำกัดของ register ไม่ใช่บั๊ก)
+- factorial.asm ถูกต้องถึง n = 12 (13! เกิน 32 bit — เป็นข้อจำกัดของ register ไม่ใช่บั๊ก) ถ้าต้องการมากกว่านั้นใช้ bigfactorial.asm
+- bigfactorial.asm ถึง 92! ภายในขีดจำกัด 1,000,000 คำสั่ง (ใหญ่กว่านั้นใช้ `--max-steps` เช่น 100! ใช้ประมาณ 1.3 ล้าน) ใน GUI รันช้ากว่า ควรใช้ n ไม่เกินประมาณ 30
 - nck ใช้ได้ถึง n = 33 (ทดสอบครบถึง n = 26)
 - ยังไม่รองรับ `LBU LHU SB SH LL SC` และไม่จำลอง branch delay slot / exception จริงของ MIPS
 - `HALT` ไม่ใช่คำสั่งของ MIPS จริง (มาจากต้นฉบับ) จึงไม่มี machine code

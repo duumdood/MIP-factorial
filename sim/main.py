@@ -18,7 +18,6 @@
 #     python main.py FILE -q                       quiet: show only SYSCALL output (for autolab)
 #     python main.py FILE --mem 0x4000             show memory at this address at the end
 #     python main.py FILE --int                    show registers as decimal numbers
-#     python main.py FILE --tui                    full-screen view like Z80Sim in DOSBox (see tui.py)
 #     python main.py FILE --gui                    open FILE in the window (GUI) version (see gui.py)
 #     python main.py --gui                         open the window with an empty editor
 # ============================================================================
@@ -47,7 +46,6 @@ def parse_args():
     parser.add_argument("-s", "--step", action="store_true", help="run one instruction per Enter")
     parser.add_argument("-v", "--verbose", action="store_true", help="instructor's original output for every instruction")
     parser.add_argument("-q", "--quiet", action="store_true", help="show only SYSCALL output")
-    parser.add_argument("--tui", action="store_true", help="full-screen view like Z80Sim in DOSBox")   # ★ [NEW]
     parser.add_argument("--gui", action="store_true", help="open the program in the window (GUI) version")   # ★ [NEW]
     parser.add_argument("--int", action="store_true", help="show registers as decimal numbers")
     parser.add_argument("--mem", type=lambda x: int(x, 0), metavar="ADDR",
@@ -79,21 +77,6 @@ def main():
         args.program = "instructions.txt"
     if args.int:
         cpu_module.DISP_FORMAT = "INT"
-
-    # ★ [NEW] full-screen TUI mode (tui.py)
-    if args.tui:
-        try:
-            from tui import run_tui
-        except ImportError:
-            print("*** The --tui mode needs the curses module. On Windows run once:  pip install windows-curses",
-                  file=sys.stderr)
-            sys.exit(1)
-        try:
-            run_tui(load_instructions(args.program), args.program)
-        except (OSError, ValueError) as e:
-            print(f"*** ERROR: {e}", file=sys.stderr)
-            sys.exit(1)
-        return
 
     # Load instruction from file
     try:                                                  # ★ [NEW] show readable error messages

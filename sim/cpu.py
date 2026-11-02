@@ -253,7 +253,7 @@ class CPU:
     def step_once(self):
         """
         Execute exactly ONE instruction (the same work as one pass of the loop in run()).
-        Used by the TUI (tui.py), which needs to control the CPU one step at a time.
+        Used by the GUI (gui.py), which needs to control the CPU one step at a time.
         Returns the executed instruction, or None if the program has finished.
         """
         if not self.running:

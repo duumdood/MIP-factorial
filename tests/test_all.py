@@ -7,6 +7,7 @@
 # Checks 5 things:
 #   1. factorial.asm matches Python's math.factorial for every value 0-12,
 #      and n = 13 must produce an overflow warning
+#   1b. bigfactorial.asm matches math.factorial for 0-40 (13! and beyond too)
 #   2. nck.asm matches math.comb for every pair 0 <= k <= n <= 26 (378 cases)
 #   3. the instructor's example programs (V7.1) still give the same results
 #   4. machine code matches the answer key of course exercise A01 (= real MIPS)
@@ -57,6 +58,23 @@ class TestFactorial(unittest.TestCase):
         cpu, text = run_program(read_lines("programs/factorial.asm"), "13")
         self.assertTrue(cpu.overflows)                        # there must be a warning
         self.assertNotEqual(text.strip(), str(math.factorial(13)))
+
+
+# ★ [NEW] bigfactorial.asm keeps n! as an array of decimal digits → no 32-bit limit
+class TestBigFactorial(unittest.TestCase):
+    def test_all_values_0_to_40(self):
+        program = read_lines("programs/bigfactorial.asm")
+        for n in range(41):
+            with self.subTest(n=n):
+                cpu, text = run_program(program, f"{n}")
+                self.assertEqual(text.strip(), str(math.factorial(n)))
+                self.assertEqual(cpu.overflows, [])           # no register ever overflows
+                self.assertIsNone(cpu.error)
+
+    def test_digits_in_memory(self):
+        cpu, _ = run_program(read_lines("programs/bigfactorial.asm"), "13")
+        digits = [cpu.memory.read_word(0x4000 + 4 * j) for j in range(10)]
+        self.assertEqual(digits, [int(d) for d in reversed(str(math.factorial(13)))])   # ones digit first
 
 
 class TestNck(unittest.TestCase):
