@@ -12,15 +12,19 @@
 #     python main.py                               run instructions.txt (as before)
 #     python main.py ../programs/factorial.asm     run the given file
 #     python main.py FILE -t                       trace: show every executed instruction, one per line
+#                                                  (with the line number in the source file)
 #     python main.py FILE -s                       step : press Enter for each instruction (like T in Z80Sim)
 #     python main.py FILE -v                       verbose: the instructor's original output (registers+memory every instruction)
 #     python main.py FILE -q                       quiet: show only SYSCALL output (for autolab)
 #     python main.py FILE --mem 0x4000             show memory at this address at the end
 #     python main.py FILE --int                    show registers as decimal numbers
 #     python main.py FILE --tui                    full-screen view like Z80Sim in DOSBox (see tui.py)
+#     python main.py FILE --gui                    open FILE in the window (GUI) version (see gui.py)
+#     python main.py --gui                         open the window with an empty editor
 # ============================================================================
 
 import argparse                     # ★ [NEW] read options from the command line
+import os                           # ★ [NEW] check that the file exists (--gui)
 import sys                          # ★ [NEW]
 import cpu as cpu_module            # ★ [NEW] used to change DISP_FORMAT
 from cpu import CPU
@@ -37,13 +41,14 @@ def load_instructions(filename):
 # ★ [NEW] command line options
 def parse_args():
     parser = argparse.ArgumentParser(description="MIPS CPU simulator (extended from V7.1)")
-    parser.add_argument("program", nargs="?", default="instructions.txt",
+    parser.add_argument("program", nargs="?", default=None,     # ★ [MODIFIED] None → instructions.txt (see main)
                         help="assembly program file (default: instructions.txt)")
     parser.add_argument("-t", "--trace", action="store_true", help="show every executed instruction")
     parser.add_argument("-s", "--step", action="store_true", help="run one instruction per Enter")
     parser.add_argument("-v", "--verbose", action="store_true", help="instructor's original output for every instruction")
     parser.add_argument("-q", "--quiet", action="store_true", help="show only SYSCALL output")
     parser.add_argument("--tui", action="store_true", help="full-screen view like Z80Sim in DOSBox")   # ★ [NEW]
+    parser.add_argument("--gui", action="store_true", help="open the program in the window (GUI) version")   # ★ [NEW]
     parser.add_argument("--int", action="store_true", help="show registers as decimal numbers")
     parser.add_argument("--mem", type=lambda x: int(x, 0), metavar="ADDR",
                         help="show memory at this address at the end, e.g. 0x4000")
@@ -59,6 +64,19 @@ def main():
         except (AttributeError, ValueError):
             pass
     args = parse_args()                                   # ★ [NEW]
+
+    # ★ [NEW] window (GUI) mode: open gui.py with this file loaded; speed, Step and Run are in the window
+    #   tkinter is imported only here, so the normal command line never needs it
+    if args.gui:
+        if args.program is not None and not os.path.isfile(args.program):
+            print(f"*** ERROR: file not found: {args.program}", file=sys.stderr)
+            sys.exit(1)
+        import gui
+        gui.main(args.program)
+        return
+
+    if args.program is None:                              # ★ [NEW] no file given → the instructor's default file
+        args.program = "instructions.txt"
     if args.int:
         cpu_module.DISP_FORMAT = "INT"
 

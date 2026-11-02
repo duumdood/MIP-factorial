@@ -135,6 +135,22 @@ def reg2bin5(r):
 # =======================================================================
 LABEL_PATTERN = re.compile(r'[A-Za-z_][A-Za-z0-9_]*$')   # label name: starts with a letter/underscore
 
+# ★ [NEW] used by trace to show which line of the source file each instruction came from
+def source_line_numbers(lines):
+    """
+    For each line that preprocess() keeps (.ORG and instructions), return its line number
+    in the source file. Uses exactly the same rules as preprocess (comments, commas, labels),
+    so instruction k (cpu.instructions[k]) came from source line numbers[k].
+    """
+    numbers = []
+    for lineno, raw in enumerate(lines, 1):
+        line = raw.split('#', 1)[0].replace(',', ' ').strip()
+        while ':' in line:
+            line = line.split(':', 1)[1].strip()
+        if line:
+            numbers.append(lineno)
+    return numbers
+
 def preprocess(lines):
     """
     lines  : list of text lines from the assembly file

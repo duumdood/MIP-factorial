@@ -28,7 +28,7 @@
 # ============================================================================
 
 import sys                                   # ★ [NEW] used to print warnings to stderr
-from isa import Instruction, preprocess, REG_NAMES   # ★ [MODIFIED] added preprocess, REG_NAMES
+from isa import Instruction, preprocess, REG_NAMES, source_line_numbers   # ★ [MODIFIED] added preprocess, REG_NAMES, source_line_numbers
 
 DISP_FORMAT = "HEX" # INT or HEX form
 
@@ -85,9 +85,13 @@ class CPU:
         self.output = []              # everything printed by SYSCALL (checked by the tests)
         self.input_func = input_func
         self.input_buffer = []        # numbers typed but not read yet (so "5 2" can be typed on one line)
+        self.inputs_read = 0          # ★ [NEW] how many times the program has asked for input (shown in the prompt)
         self.quiet = quiet
         self.verbose = False          # set by run()
         self.error = None             # error message if the program stopped because of an error
+
+        # ★ [NEW] remember which source line each instruction came from (shown in trace)
+        self.line_of = source_line_numbers(instructions)
 
         # ★ [NEW] run the 2-pass assembler first (labels, comments, commas) — see isa.preprocess
         instructions, self.labels = preprocess(instructions)
@@ -222,6 +226,7 @@ class CPU:
                 break
             before = self.registers.copy()                    # ★ [NEW] keep the old values to compare in trace
             pc_text = self.pc2hex()
+            line = self.source_line(self.current_index())    # ★ [NEW] read before execute (jumps change PC)
             if verbose:
                 print(f"Executed: {self.pc2hex()} {instr.raw}")
             self.execute(instr)
@@ -235,7 +240,7 @@ class CPU:
 
             self.validate()
             if (trace or step) and instr.opcode != '.ORG':    # ★ [NEW]
-                self.print_trace(pc_text, instr, before)
+                self.print_trace(pc_text, instr, before, line)
             self.PC += 1
             if step and self.running and instr.opcode != '.ORG':   # ★ [NEW]
                 step = self.step_prompt()                     # returns False if the user pressed g (run to the end)
@@ -272,13 +277,18 @@ class CPU:
         has_org = self.instructions[0].opcode == '.ORG'
         return self.text_start + 4 * (index - (1 if has_org else 0))
 
-    def print_trace(self, pc_text, instr, before):
-        """Print 1 line: [address] instruction | registers that changed (old value -> new value)"""
+    def source_line(self, index):
+        """Line number in the source file of self.instructions[index] (None if unknown)"""
+        return self.line_of[index] if 0 <= index < len(self.line_of) else None
+
+    def print_trace(self, pc_text, instr, before, line=None):
+        """Print 1 line: line N [address] instruction | registers that changed (old value -> new value)"""
         changes = []
         for i in range(32):
             if before[i] != self.registers[i]:
                 changes.append(f"${REG_NAMES[i]}: {before[i]:08X} -> {self.registers[i]:08X}")
-        print(f"[{pc_text}] {instr.raw:<26} | {', '.join(changes)}")
+        line_text = f"line {line:>3}" if line is not None else "line   ?"   # ★ [NEW] source line number
+        print(f"{line_text} [{pc_text}] {instr.raw:<26} | {', '.join(changes)}")
 
     def step_prompt(self):
         """
@@ -527,7 +537,17 @@ class CPU:
             elif service == 5:
                 try:
                     while not self.input_buffer:      # wait until there is a number to read
-                        prompt = "" if self.quiet else ">>> Enter a number and press Enter: "
+                        self.inputs_read += 1
+                        # ★ [MODIFIED] clearer prompt that says which input this is
+                        prompt = f">>> The program is waiting for input #{self.inputs_read} (SYSCALL 5): type a number and press Enter: "
+                        if self.quiet:
+                            # quiet mode: stdout must contain only the program's output (autolab).
+                            # A person typing at the keyboard still needs to see the question, so print it
+                            # to stderr — but only when the keyboard is really used (not when input comes
+                            # from a file/pipe, as in autolab) and only for the normal input() function.
+                            if self.input_func is input and sys.stdin.isatty():
+                                print(prompt, end='', file=sys.stderr, flush=True)
+                            prompt = ""
                         self.input_buffer = self.input_func(prompt).split()
                     self.set_reg(2, int(self.input_buffer.pop(0), 0))
                 except EOFError:
